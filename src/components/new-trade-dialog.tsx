@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useFormState, useForm } from 'react-hook-form';
+import { useFormState } from 'react-dom';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { CalendarIcon, Loader2, PlusCircle } from 'lucide-react';
@@ -66,6 +67,8 @@ export function NewTradeDialog() {
     },
   });
 
+  const { formState: RHFFormState } = form;
+
   useEffect(() => {
     if (formState.message && !formState.errors) {
       toast({
@@ -91,8 +94,7 @@ export function NewTradeDialog() {
     formData.append('closePrice', String(data.closePrice));
     formData.append('closeDate', data.closeDate.toISOString());
     
-    const action = formAction.bind(null, formState);
-    action(formData);
+    formAction(formData);
   };
   
 
@@ -231,7 +233,7 @@ export function NewTradeDialog() {
               )}
             />
             <DialogFooter>
-              <SubmitButton />
+              <SubmitButton pending={RHFFormState.isSubmitting} />
             </DialogFooter>
           </form>
         </Form>
@@ -240,8 +242,7 @@ export function NewTradeDialog() {
   );
 }
 
-function SubmitButton() {
-    const { pending } = useForm().formState;
+function SubmitButton({ pending }: { pending: boolean }) {
     return (
         <Button type="submit" disabled={pending}>
             {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
