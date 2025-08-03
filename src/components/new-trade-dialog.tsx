@@ -20,6 +20,7 @@ import { Input } from '@/components/ui/input';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -38,12 +39,15 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Calendar } from './ui/calendar';
+import { RadioGroup, RadioGroupItem } from './ui/radio-group';
+import type { TradeOutcome } from '@/lib/types';
 
 const tradeSchema = z.object({
   pair: z.enum(['XAUUSD', 'GBPJPY', 'EURUSD'], { required_error: 'Please select a pair.' }),
   type: z.enum(['buy', 'sell'], { required_error: 'Please select a trade type.' }),
   profit: z.coerce.number(),
-  riskRewardRatio: z.coerce.number().positive('Risk/Reward Ratio must be positive'),
+  outcome: z.enum(['tp', 'sl'], { required_error: 'Please select an outcome.' }),
+  riskRewardRatio: z.coerce.number(),
   closeDate: z.date({ required_error: 'Please select a date.' }),
   strategy: z.enum(["Scalping", "Swing Trading", "Day Trading", "Position Trading"], { required_error: 'Please select a strategy.' }),
   session: z.enum(['Asian', 'London', 'New York'], { required_error: 'Please select a session.' }),
@@ -66,10 +70,23 @@ export function NewTradeDialog() {
     defaultValues: {
       profit: 0,
       riskRewardRatio: 1,
+      outcome: 'tp',
     },
   });
 
-  const { formState: RHFFormState } = form;
+  const { formState: RHFFormState, watch, setValue } = form;
+  const outcome = watch('outcome');
+
+  useEffect(() => {
+    if (outcome === 'sl') {
+      setValue('riskRewardRatio', -1);
+    } else {
+      // Optional: Reset to a default value when switching back to TP
+      if (form.getValues('riskRewardRatio') === -1) {
+        setValue('riskRewardRatio', 1);
+      }
+    }
+  }, [outcome, setValue, form]);
 
   useEffect(() => {
     if (formState.message && !formState.errors) {
@@ -97,6 +114,7 @@ export function NewTradeDialog() {
     formData.append('closeDate', data.closeDate.toISOString());
     formData.append('strategy', data.strategy);
     formData.append('session', data.session);
+    formData.append('outcome', data.outcome);
     
     formAction(formData);
   };
@@ -169,6 +187,37 @@ export function NewTradeDialog() {
                 )}
               />
             </div>
+            
+            <FormField
+              control={form.control}
+              name="outcome"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormLabel>Outcome</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex space-x-4"
+                    >
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="tp" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Take Profit</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="sl" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Stop Loss</FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <div className="grid grid-cols-2 gap-4">
               <FormField
@@ -191,7 +240,7 @@ export function NewTradeDialog() {
                   <FormItem>
                     <FormLabel>Risk/Reward Ratio</FormLabel>
                     <FormControl>
-                      <Input type="number" step="any" placeholder="e.g. 2.5" {...field} />
+                      <Input type="number" step="any" placeholder="e.g. 2.5" {...field} disabled={outcome === 'sl'} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
