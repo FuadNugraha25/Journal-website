@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { addTrade } from './data';
+import { addTrade, getStrategies } from './data';
 import type { TradePair, TradeType, TradeSession, TradeStrategy, TradeOutcome } from './types';
 
 const tradeSchema = z.object({
@@ -12,7 +12,7 @@ const tradeSchema = z.object({
   outcome: z.enum(['tp', 'sl', 'breakeven']),
   riskRewardRatio: z.coerce.number(),
   closeDate: z.coerce.date(),
-  strategy: z.enum(["Scalping", "Swing Trading", "Day Trading", "Position Trading"]),
+  strategy: z.string(),
   session: z.enum(['Asian', 'London', 'New York']),
 });
 
@@ -31,7 +31,12 @@ export type FormState = {
 };
 
 export async function addTradeAction(prevState: FormState, formData: FormData): Promise<FormState> {
-  const validatedFields = tradeSchema.safeParse({
+  const strategies = await getStrategies();
+  const dynamicTradeSchema = tradeSchema.extend({
+    strategy: z.enum(strategies as [string, ...string[]]),
+  })
+
+  const validatedFields = dynamicTradeSchema.safeParse({
     pair: formData.get('pair'),
     type: formData.get('type'),
     profit: formData.get('profit'),
@@ -62,6 +67,7 @@ export async function addTradeAction(prevState: FormState, formData: FormData): 
     });
 
     revalidatePath('/');
+    revalidatePath('/settings/strategies');
     return { message: 'Trade added successfully.' };
   } catch (e) {
     return { message: 'Failed to add trade.' };

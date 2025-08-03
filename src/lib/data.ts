@@ -1,5 +1,7 @@
 import type { Trade, TradePair, TradeType, TradeSession, TradeStrategy, TradeOutcome } from './types';
 
+let strategies: TradeStrategy[] = ["Scalping", "Swing Trading", "Day Trading", "Position Trading"];
+
 // In-memory store for trades to act as a mock database.
 let trades: Trade[] = [
   { id: '1', pair: 'XAUUSD', type: 'buy', profit: 525, riskRewardRatio: 2.5, closeDate: new Date('2023-10-26T10:00:00Z'), strategy: 'Scalping', session: 'London', outcome: 'tp' },
@@ -25,4 +27,12 @@ export async function addTrade(tradeData: Omit<Trade, 'id'>): Promise<Trade> {
   };
   trades.push(newTrade);
   return newTrade;
+}
+
+export async function getStrategies(): Promise<TradeStrategy[]> {
+  return [...new Set(strategies)];
+}
+
+export async function addStrategy(strategy: TradeStrategy): Promise<void> {
+  strategies.push(strategy);
 }

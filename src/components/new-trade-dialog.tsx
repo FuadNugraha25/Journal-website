@@ -5,7 +5,7 @@ import { useFormState } from 'react-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { CalendarIcon, Loader2, PlusCircle } from 'lucide-react';
+import { CalendarIcon, Loader2, PlusCircle, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -41,6 +41,8 @@ import { format } from 'date-fns';
 import { Calendar } from './ui/calendar';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import type { TradeOutcome } from '@/lib/types';
+import { getStrategies } from '@/lib/data';
+import Link from 'next/link';
 
 const tradeSchema = z.object({
   pair: z.enum(['XAUUSD', 'GBPJPY', 'EURUSD'], { required_error: 'Please select a pair.' }),
@@ -49,7 +51,7 @@ const tradeSchema = z.object({
   outcome: z.enum(['tp', 'sl', 'breakeven'], { required_error: 'Please select an outcome.' }),
   riskRewardRatio: z.coerce.number(),
   closeDate: z.date({ required_error: 'Please select a date.' }),
-  strategy: z.enum(["Scalping", "Swing Trading", "Day Trading", "Position Trading"], { required_error: 'Please select a strategy.' }),
+  strategy: z.string({ required_error: 'Please select a strategy.' }),
   session: z.enum(['Asian', 'London', 'New York'], { required_error: 'Please select a session.' }),
 });
 
@@ -64,6 +66,11 @@ export function NewTradeDialog() {
   const [formState, formAction] = useFormState(addTradeAction, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
+  const [strategies, setStrategies] = useState<string[]>([]);
+
+  useEffect(() => {
+    getStrategies().then(setStrategies);
+  }, []);
 
   const form = useForm<TradeFormValues>({
     resolver: zodResolver(tradeSchema),
@@ -262,23 +269,30 @@ export function NewTradeDialog() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Strategy</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a strategy" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Scalping">Scalping</SelectItem>
-                      <SelectItem value="Swing Trading">Swing Trading</SelectItem>
-                      <SelectItem value="Day Trading">Day Trading</SelectItem>
-                      <SelectItem value="Position Trading">Position Trading</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="flex items-center gap-2">
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a strategy" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {strategies.map((strategy) => (
+                          <SelectItem key={strategy} value={strategy}>{strategy}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button asChild variant="ghost" size="icon">
+                      <Link href="/settings/strategies">
+                        <Settings className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="session"
