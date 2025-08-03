@@ -27,6 +27,8 @@ export function TradesTable({ trades }: { trades: Trade[] }) {
                 <TableRow>
                 <TableHead>Pair</TableHead>
                 <TableHead>Type</TableHead>
+                <TableHead>Strategy</TableHead>
+                <TableHead>Session</TableHead>
                 <TableHead>Close Date</TableHead>
                 <TableHead className="text-right">Open Price</TableHead>
                 <TableHead className="text-right">Close Price</TableHead>
@@ -36,7 +38,7 @@ export function TradesTable({ trades }: { trades: Trade[] }) {
             <TableBody>
                 {trades.length === 0 && (
                     <TableRow>
-                        <TableCell colSpan={6} className="h-24 text-center">
+                        <TableCell colSpan={8} className="h-24 text-center">
                             No trades found.
                         </TableCell>
                     </TableRow>
@@ -50,6 +52,8 @@ export function TradesTable({ trades }: { trades: Trade[] }) {
                         {trade.type}
                     </Badge>
                     </TableCell>
+                    <TableCell>{trade.strategy}</TableCell>
+                    <TableCell>{trade.session}</TableCell>
                     <TableCell>{format(trade.closeDate, 'PP')}</TableCell>
                     <TableCell className="text-right">{trade.openPrice.toFixed(4)}</TableCell>
                     <TableCell className="text-right">{trade.closePrice.toFixed(4)}</TableCell>

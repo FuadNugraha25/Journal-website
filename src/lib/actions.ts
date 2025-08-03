@@ -3,7 +3,7 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { addTrade } from './data';
-import type { TradePair, TradeType } from './types';
+import type { TradePair, TradeType, TradeSession, TradeStrategy } from './types';
 
 const tradeSchema = z.object({
   pair: z.enum(['XAUUSD', 'GBPJPY', 'EURUSD']),
@@ -11,6 +11,8 @@ const tradeSchema = z.object({
   openPrice: z.coerce.number().positive('Open price must be positive'),
   closePrice: z.coerce.number().positive('Close price must be positive'),
   closeDate: z.coerce.date(),
+  strategy: z.enum(["Scalping", "Swing Trading", "Day Trading", "Position Trading"]),
+  session: z.enum(['Asian', 'London', 'New York']),
 });
 
 export type FormState = {
@@ -21,6 +23,8 @@ export type FormState = {
     openPrice?: string[];
     closePrice?: string[];
     closeDate?: string[];
+    strategy?: string[];
+    session?: string[];
   };
 };
 
@@ -31,6 +35,8 @@ export async function addTradeAction(prevState: FormState, formData: FormData): 
     openPrice: formData.get('openPrice'),
     closePrice: formData.get('closePrice'),
     closeDate: new Date(formData.get('closeDate') as string),
+    strategy: formData.get('strategy'),
+    session: formData.get('session'),
   });
   
   if (!validatedFields.success) {
@@ -47,6 +53,8 @@ export async function addTradeAction(prevState: FormState, formData: FormData): 
       openPrice: validatedFields.data.openPrice,
       closePrice: validatedFields.data.closePrice,
       closeDate: validatedFields.data.closeDate,
+      strategy: validatedFields.data.strategy as TradeStrategy,
+      session: validatedFields.data.session as TradeSession,
     });
 
     revalidatePath('/');

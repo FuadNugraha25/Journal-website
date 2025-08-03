@@ -1,5 +1,7 @@
 export type TradePair = "XAUUSD" | "GBPJPY" | "EURUSD";
 export type TradeType = "buy" | "sell";
+export type TradeSession = "Asian" | "London" | "New York";
+export type TradeStrategy = "Scalping" | "Swing Trading" | "Day Trading" | "Position Trading";
 
 export interface Trade {
   id: string;
@@ -9,4 +11,6 @@ export interface Trade {
   closePrice: number;
   closeDate: Date;
   profit: number;
+  strategy: TradeStrategy;
+  session: TradeSession;
 }

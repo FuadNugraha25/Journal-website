@@ -45,6 +45,8 @@ const tradeSchema = z.object({
   openPrice: z.coerce.number().positive('Open price must be positive'),
   closePrice: z.coerce.number().positive('Close price must be positive'),
   closeDate: z.date({ required_error: 'Please select a date.' }),
+  strategy: z.enum(["Scalping", "Swing Trading", "Day Trading", "Position Trading"], { required_error: 'Please select a strategy.' }),
+  session: z.enum(['Asian', 'London', 'New York'], { required_error: 'Please select a session.' }),
 });
 
 type TradeFormValues = z.infer<typeof tradeSchema>;
@@ -93,6 +95,8 @@ export function NewTradeDialog() {
     formData.append('openPrice', String(data.openPrice));
     formData.append('closePrice', String(data.closePrice));
     formData.append('closeDate', data.closeDate.toISOString());
+    formData.append('strategy', data.strategy);
+    formData.append('session', data.session);
     
     formAction(formData);
   };
@@ -191,6 +195,51 @@ export function NewTradeDialog() {
                   )}
                 />
             </div>
+            <FormField
+              control={form.control}
+              name="strategy"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Strategy</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a strategy" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Scalping">Scalping</SelectItem>
+                      <SelectItem value="Swing Trading">Swing Trading</SelectItem>
+                      <SelectItem value="Day Trading">Day Trading</SelectItem>
+                      <SelectItem value="Position Trading">Position Trading</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="session"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Session</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a session" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Asian">Asian</SelectItem>
+                      <SelectItem value="London">London</SelectItem>
+                      <SelectItem value="New York">New York</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="closeDate"
