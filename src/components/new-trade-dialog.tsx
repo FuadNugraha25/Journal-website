@@ -43,12 +43,18 @@ import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import type { TradeOutcome } from '@/lib/types';
 import { getStrategies } from '@/lib/data';
 import Link from 'next/link';
+import {
+  TooltipProvider,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from '@/components/ui/tooltip';
 
 const tradeSchema = z.object({
   pair: z.enum(['XAUUSD', 'GBPJPY', 'EURUSD'], { required_error: 'Please select a pair.' }),
   type: z.enum(['buy', 'sell'], { required_error: 'Please select a trade type.' }),
   profit: z.coerce.number(),
-  outcome: z.enum(['tp', 'sl', 'breakeven'], { required_error: 'Please select an outcome.' }),
+  outcome: z.enum(['tp', 'sl', 'breakeven', 'cp', 'cl'], { required_error: 'Please select an outcome.' }),
   riskRewardRatio: z.coerce.number(),
   closeDate: z.date({ required_error: 'Please select a date.' }),
   strategy: z.string({ required_error: 'Please select a strategy.' }),
@@ -83,17 +89,19 @@ export function NewTradeDialog() {
 
   const { formState: RHFFormState, watch, setValue } = form;
   const outcome = watch('outcome');
+  const type = watch('type');
 
   useEffect(() => {
-    if (outcome === 'sl') {
-      setValue('riskRewardRatio', -1);
+    if (outcome === 'sl' || outcome === 'cl') {
+      const currentProfit = form.getValues('profit');
+      if (currentProfit > 0) setValue('profit', currentProfit * -1);
+      if (outcome === 'sl') setValue('riskRewardRatio', -1);
     } else if (outcome === 'breakeven') {
       setValue('riskRewardRatio', 0);
-    } else {
-      // Optional: Reset to a default value when switching back to TP
-      if (form.getValues('riskRewardRatio') <= 0) {
-        setValue('riskRewardRatio', 1);
-      }
+      setValue('profit', 0);
+    } else if (outcome === 'tp' || outcome === 'cp') {
+        const currentProfit = form.getValues('profit');
+        if (currentProfit < 0) setValue('profit', Math.abs(currentProfit));
     }
   }, [outcome, setValue, form]);
 
@@ -137,7 +145,7 @@ export function NewTradeDialog() {
           New Trade
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle className="font-headline">Log a New Trade</DialogTitle>
           <DialogDescription>
@@ -207,26 +215,13 @@ export function NewTradeDialog() {
                     <RadioGroup
                       onValueChange={field.onChange}
                       defaultValue={field.value}
-                      className="grid grid-cols-3 gap-2"
+                      className="grid grid-cols-5 gap-2"
                     >
-                      <FormItem>
-                        <RadioGroupItem value="tp" id="tp" className="peer sr-only" />
-                        <FormLabel htmlFor="tp" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer">
-                          Take Profit
-                        </FormLabel>
-                      </FormItem>
-                      <FormItem>
-                        <RadioGroupItem value="sl" id="sl" className="peer sr-only" />
-                        <FormLabel htmlFor="sl" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-destructive [&:has([data-state=checked])]:border-destructive cursor-pointer">
-                          Stop Loss
-                        </FormLabel>
-                      </FormItem>
-                      <FormItem>
-                        <RadioGroupItem value="breakeven" id="breakeven" className="peer sr-only" />
-                         <FormLabel htmlFor="breakeven" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-yellow-500 [&:has([data-state=checked])]:border-yellow-500 cursor-pointer">
-                          Breakeven
-                        </FormLabel>
-                      </FormItem>
+                      <OutcomeOption value="tp" label="TP" description="Full Take Profit" />
+                      <OutcomeOption value="cp" label="CP" description="Partial/Cut Profit" />
+                      <OutcomeOption value="breakeven" label="BE" description="Breakeven" />
+                      <OutcomeOption value="cl" label="CL" description="Partial/Cut Loss" />
+                      <OutcomeOption value="sl" label="SL" description="Full Stop Loss" />
                     </RadioGroup>
                   </FormControl>
                   <FormMessage />
@@ -242,7 +237,7 @@ export function NewTradeDialog() {
                   <FormItem>
                     <FormLabel>P/L ($)</FormLabel>
                     <FormControl>
-                      <Input type="number" step="any" placeholder="e.g. 150.50" {...field} />
+                      <Input type="number" step="any" placeholder="e.g. 150.50" {...field} disabled={outcome === 'breakeven'} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -363,6 +358,35 @@ export function NewTradeDialog() {
         </Form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function OutcomeOption({ value, label, description }: { value: TradeOutcome, label: string, description: string }) {
+  const baseClasses = "flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer";
+  const stateClasses = {
+    tp: "peer-data-[state=checked]:border-green-500 [&:has([data-state=checked])]:border-green-500",
+    cp: "peer-data-[state=checked]:border-green-800 [&:has([data-state=checked])]:border-green-800",
+    breakeven: "peer-data-[state=checked]:border-yellow-500 [&:has([data-state=checked])]:border-yellow-500",
+    cl: "peer-data-[state=checked]:border-red-800 [&:has([data-state=checked])]:border-red-800",
+    sl: "peer-data-[state=checked]:border-destructive [&:has([data-state=checked])]:border-destructive",
+  };
+
+  return (
+    <TooltipProvider delayDuration={200}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <FormItem>
+            <RadioGroupItem value={value} id={value} className="peer sr-only" />
+            <FormLabel htmlFor={value} className={cn(baseClasses, stateClasses[value])}>
+              {label}
+            </FormLabel>
+          </FormItem>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{description}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 

@@ -14,6 +14,41 @@ import { cn } from '@/lib/utils';
 import { TrendingUp, TrendingDown, Ratio } from 'lucide-react';
 
 export function TradesTable({ trades }: { trades: Trade[] }) {
+  
+  const getOutcomeStyles = (outcome: Trade['outcome']) => {
+    switch (outcome) {
+      case 'tp':
+        return 'text-green-400';
+      case 'cp':
+        return 'text-green-600';
+      case 'sl':
+        return 'text-red-400';
+      case 'cl':
+        return 'text-red-600';
+      case 'breakeven':
+        return 'text-yellow-400';
+      default:
+        return 'text-foreground';
+    }
+  }
+
+  const getOutcomeBadge = (outcome: Trade['outcome']) => {
+    switch (outcome) {
+      case 'tp':
+        return 'bg-green-800/50 text-green-300 border-green-700/60';
+      case 'cp':
+        return 'bg-green-900/50 text-green-500 border-green-800/60';
+      case 'sl':
+        return 'bg-red-800/50 text-red-300 border-red-700/60';
+      case 'cl':
+        return 'bg-red-900/50 text-red-500 border-red-800/60';
+      case 'breakeven':
+        return 'bg-yellow-800/50 text-yellow-300 border-yellow-700/60';
+      default:
+        return 'bg-secondary';
+    }
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -29,6 +64,7 @@ export function TradesTable({ trades }: { trades: Trade[] }) {
                 <TableHead>Type</TableHead>
                 <TableHead>Strategy</TableHead>
                 <TableHead>Session</TableHead>
+                <TableHead>Outcome</TableHead>
                 <TableHead>Close Date</TableHead>
                 <TableHead>R/R</TableHead>
                 <TableHead className="text-right">P/L</TableHead>
@@ -37,7 +73,7 @@ export function TradesTable({ trades }: { trades: Trade[] }) {
             <TableBody>
                 {trades.length === 0 && (
                     <TableRow>
-                        <TableCell colSpan={7} className="h-24 text-center">
+                        <TableCell colSpan={8} className="h-24 text-center">
                             No trades found.
                         </TableCell>
                     </TableRow>
@@ -53,6 +89,11 @@ export function TradesTable({ trades }: { trades: Trade[] }) {
                     </TableCell>
                     <TableCell>{trade.strategy}</TableCell>
                     <TableCell>{trade.session}</TableCell>
+                    <TableCell>
+                        <Badge className={cn(getOutcomeBadge(trade.outcome), "uppercase")}>
+                            {trade.outcome}
+                        </Badge>
+                    </TableCell>
                     <TableCell>{format(trade.closeDate, 'PP')}</TableCell>
                     <TableCell className="font-mono text-xs flex items-center gap-1">
                       <Ratio className="h-3 w-3 text-muted-foreground" />
@@ -61,7 +102,7 @@ export function TradesTable({ trades }: { trades: Trade[] }) {
                     <TableCell
                     className={cn(
                         'text-right font-semibold',
-                        trade.profit >= 0 ? 'text-green-400' : 'text-destructive'
+                        getOutcomeStyles(trade.outcome)
                     )}
                     >
                     {trade.profit >= 0 ? '+' : ''}
