@@ -33,6 +33,10 @@ export async function getStrategies(): Promise<TradeStrategy[]> {
   return [...new Set(strategies)];
 }
 
+export async function updateStrategies(newStrategies: TradeStrategy[]): Promise<void> {
+  strategies = [...new Set(newStrategies)];
+}
+
 export async function addStrategy(strategy: TradeStrategy): Promise<void> {
   strategies.push(strategy);
 }

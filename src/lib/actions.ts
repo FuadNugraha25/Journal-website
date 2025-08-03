@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { addTrade, getStrategies } from './data';
+import { addTrade, getStrategies, updateStrategies } from './data';
 import type { TradePair, TradeType, TradeSession, TradeStrategy, TradeOutcome } from './types';
 
 const tradeSchema = z.object({
@@ -71,5 +71,20 @@ export async function addTradeAction(prevState: FormState, formData: FormData): 
     return { message: 'Trade added successfully.' };
   } catch (e) {
     return { message: 'Failed to add trade.' };
+  }
+}
+
+export async function updateStrategiesAction(strategies: string[]): Promise<{ message: string }> {
+  try {
+    const validatedStrategies = z.array(z.string().min(1)).safeParse(strategies);
+    if (!validatedStrategies.success) {
+      return { message: 'Invalid strategy list.' };
+    }
+    await updateStrategies(validatedStrategies.data);
+    revalidatePath('/settings/strategies');
+    revalidatePath('/');
+    return { message: 'Strategies updated successfully.' };
+  } catch (e) {
+    return { message: 'Failed to update strategies.' };
   }
 }
