@@ -14,7 +14,7 @@ import {z} from 'genkit';
 
 const AiTradeAnalyzerInputSchema = z.object({
   tradingHistory: z.string().describe(
-    'A detailed record of trading history for XAUUSD, GBPJPY, and EURUSD pairs, including trade type, open and close times, and open and close prices.'
+    'A detailed record of trading history for XAUUSD, GBPJPY, and EURUSD pairs, including trade type, Profit/Loss (P/L), and Risk/Reward Ratio (R/R).'
   ),
 });
 export type AiTradeAnalyzerInput = z.infer<typeof AiTradeAnalyzerInputSchema>;
@@ -34,7 +34,7 @@ const prompt = ai.definePrompt({
   name: 'aiTradeAnalyzerPrompt',
   input: {schema: AiTradeAnalyzerInputSchema},
   output: {schema: AiTradeAnalyzerOutputSchema},
-  prompt: `You are an expert trading analyst specializing in forex, particularly XAUUSD, GBPJPY, and EURUSD pairs. Analyze the provided trading history to identify patterns, strengths, and weaknesses. Generate a detailed report with personalized improvement suggestions and potential opportunities based on the user's trading data.  Also, identify market factors, or past trading tendencies.
+  prompt: `You are an expert trading analyst specializing in forex, particularly XAUUSD, GBPJPY, and EURUSD pairs. Analyze the provided trading history to identify patterns, strengths, and weaknesses. Generate a detailed report with personalized improvement suggestions and potential opportunities based on the user's trading data. Pay close attention to the Risk/Reward ratio and P/L of each trade. Also, identify market factors, or past trading tendencies.
 
 Trading History:
 {{{tradingHistory}}}

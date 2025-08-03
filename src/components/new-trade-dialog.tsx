@@ -42,8 +42,8 @@ import { Calendar } from './ui/calendar';
 const tradeSchema = z.object({
   pair: z.enum(['XAUUSD', 'GBPJPY', 'EURUSD'], { required_error: 'Please select a pair.' }),
   type: z.enum(['buy', 'sell'], { required_error: 'Please select a trade type.' }),
-  openPrice: z.coerce.number().positive('Open price must be positive'),
-  closePrice: z.coerce.number().positive('Close price must be positive'),
+  profit: z.coerce.number(),
+  riskRewardRatio: z.coerce.number().positive('Risk/Reward Ratio must be positive'),
   closeDate: z.date({ required_error: 'Please select a date.' }),
   strategy: z.enum(["Scalping", "Swing Trading", "Day Trading", "Position Trading"], { required_error: 'Please select a strategy.' }),
   session: z.enum(['Asian', 'London', 'New York'], { required_error: 'Please select a session.' }),
@@ -64,8 +64,8 @@ export function NewTradeDialog() {
   const form = useForm<TradeFormValues>({
     resolver: zodResolver(tradeSchema),
     defaultValues: {
-      openPrice: 0,
-      closePrice: 0,
+      profit: 0,
+      riskRewardRatio: 1,
     },
   });
 
@@ -92,8 +92,8 @@ export function NewTradeDialog() {
     const formData = new FormData();
     formData.append('pair', data.pair);
     formData.append('type', data.type);
-    formData.append('openPrice', String(data.openPrice));
-    formData.append('closePrice', String(data.closePrice));
+    formData.append('profit', String(data.profit));
+    formData.append('riskRewardRatio', String(data.riskRewardRatio));
     formData.append('closeDate', data.closeDate.toISOString());
     formData.append('strategy', data.strategy);
     formData.append('session', data.session);
@@ -110,7 +110,7 @@ export function NewTradeDialog() {
           New Trade
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="font-headline">Log a New Trade</DialogTitle>
           <DialogDescription>
@@ -124,77 +124,81 @@ export function NewTradeDialog() {
             onSubmit={form.handleSubmit(onFormSubmit)}
             className="space-y-4"
           >
-            <FormField
-              control={form.control}
-              name="pair"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Pair</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a currency pair" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="XAUUSD">XAU/USD</SelectItem>
-                      <SelectItem value="GBPJPY">GBP/JPY</SelectItem>
-                      <SelectItem value="EURUSD">EUR/USD</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select trade type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="buy">Buy</SelectItem>
-                      <SelectItem value="sell">Sell</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
             <div className="grid grid-cols-2 gap-4">
-               <FormField
-                  control={form.control}
-                  name="openPrice"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Open Price</FormLabel>
+              <FormField
+                control={form.control}
+                name="pair"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Pair</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <Input type="number" step="any" {...field} />
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a currency pair" />
+                        </SelectTrigger>
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="closePrice"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Close Price</FormLabel>
+                      <SelectContent>
+                        <SelectItem value="XAUUSD">XAU/USD</SelectItem>
+                        <SelectItem value="GBPJPY">GBP/JPY</SelectItem>
+                        <SelectItem value="EURUSD">EUR/USD</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Type</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <Input type="number" step="any" {...field} />
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select trade type" />
+                        </SelectTrigger>
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                      <SelectContent>
+                        <SelectItem value="buy">Buy</SelectItem>
+                        <SelectItem value="sell">Sell</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="profit"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>P/L ($)</FormLabel>
+                    <FormControl>
+                      <Input type="number" step="any" placeholder="e.g. 150.50" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="riskRewardRatio"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Risk/Reward Ratio</FormLabel>
+                    <FormControl>
+                      <Input type="number" step="any" placeholder="e.g. 2.5" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
             <FormField
               control={form.control}
               name="strategy"

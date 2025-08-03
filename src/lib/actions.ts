@@ -8,8 +8,8 @@ import type { TradePair, TradeType, TradeSession, TradeStrategy } from './types'
 const tradeSchema = z.object({
   pair: z.enum(['XAUUSD', 'GBPJPY', 'EURUSD']),
   type: z.enum(['buy', 'sell']),
-  openPrice: z.coerce.number().positive('Open price must be positive'),
-  closePrice: z.coerce.number().positive('Close price must be positive'),
+  profit: z.coerce.number(),
+  riskRewardRatio: z.coerce.number().positive('Risk/Reward Ratio must be positive'),
   closeDate: z.coerce.date(),
   strategy: z.enum(["Scalping", "Swing Trading", "Day Trading", "Position Trading"]),
   session: z.enum(['Asian', 'London', 'New York']),
@@ -20,8 +20,8 @@ export type FormState = {
   errors?: {
     pair?: string[];
     type?: string[];
-    openPrice?: string[];
-    closePrice?: string[];
+    profit?: string[];
+    riskRewardRatio?: string[];
     closeDate?: string[];
     strategy?: string[];
     session?: string[];
@@ -32,8 +32,8 @@ export async function addTradeAction(prevState: FormState, formData: FormData): 
   const validatedFields = tradeSchema.safeParse({
     pair: formData.get('pair'),
     type: formData.get('type'),
-    openPrice: formData.get('openPrice'),
-    closePrice: formData.get('closePrice'),
+    profit: formData.get('profit'),
+    riskRewardRatio: formData.get('riskRewardRatio'),
     closeDate: new Date(formData.get('closeDate') as string),
     strategy: formData.get('strategy'),
     session: formData.get('session'),
@@ -50,8 +50,8 @@ export async function addTradeAction(prevState: FormState, formData: FormData): 
     await addTrade({
       pair: validatedFields.data.pair as TradePair,
       type: validatedFields.data.type as TradeType,
-      openPrice: validatedFields.data.openPrice,
-      closePrice: validatedFields.data.closePrice,
+      profit: validatedFields.data.profit,
+      riskRewardRatio: validatedFields.data.riskRewardRatio,
       closeDate: validatedFields.data.closeDate,
       strategy: validatedFields.data.strategy as TradeStrategy,
       session: validatedFields.data.session as TradeSession,

@@ -27,7 +27,7 @@ export function AnalyzerView({ trades }: { trades: Trade[] }) {
       const tradingHistory = trades
         .map(
           (t) =>
-            `Pair: ${t.pair}, Type: ${t.type}, Open: ${t.openPrice}, Close: ${t.closePrice}, Date: ${format(t.closeDate, 'yyyy-MM-dd')}, P/L: ${t.profit.toFixed(2)}`
+            `Pair: ${t.pair}, Type: ${t.type}, P/L: ${t.profit.toFixed(2)}, R/R: ${t.riskRewardRatio}, Date: ${format(t.closeDate, 'yyyy-MM-dd')}`
         )
         .join('\n');
 

@@ -7,10 +7,9 @@ export interface Trade {
   id: string;
   pair: TradePair;
   type: TradeType;
-  openPrice: number;
-  closePrice: number;
-  closeDate: Date;
   profit: number;
+  riskRewardRatio: number;
+  closeDate: Date;
   strategy: TradeStrategy;
   session: TradeSession;
 }

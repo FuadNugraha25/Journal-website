@@ -11,7 +11,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, Ratio } from 'lucide-react';
 
 export function TradesTable({ trades }: { trades: Trade[] }) {
   return (
@@ -30,13 +30,14 @@ export function TradesTable({ trades }: { trades: Trade[] }) {
                 <TableHead>Strategy</TableHead>
                 <TableHead>Session</TableHead>
                 <TableHead>Close Date</TableHead>
+                <TableHead>R/R</TableHead>
                 <TableHead className="text-right">P/L</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
                 {trades.length === 0 && (
                     <TableRow>
-                        <TableCell colSpan={6} className="h-24 text-center">
+                        <TableCell colSpan={7} className="h-24 text-center">
                             No trades found.
                         </TableCell>
                     </TableRow>
@@ -53,6 +54,10 @@ export function TradesTable({ trades }: { trades: Trade[] }) {
                     <TableCell>{trade.strategy}</TableCell>
                     <TableCell>{trade.session}</TableCell>
                     <TableCell>{format(trade.closeDate, 'PP')}</TableCell>
+                    <TableCell className="font-mono text-xs flex items-center gap-1">
+                      <Ratio className="h-3 w-3 text-muted-foreground" />
+                      {trade.riskRewardRatio.toFixed(2)}R
+                    </TableCell>
                     <TableCell
                     className={cn(
                         'text-right font-semibold',
@@ -60,7 +65,7 @@ export function TradesTable({ trades }: { trades: Trade[] }) {
                     )}
                     >
                     {trade.profit >= 0 ? '+' : ''}
-                    {trade.profit.toFixed(2)}
+                    ${trade.profit.toFixed(2)}
                     </TableCell>
                 </TableRow>
                 ))}
