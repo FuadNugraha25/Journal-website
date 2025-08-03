@@ -46,7 +46,7 @@ const tradeSchema = z.object({
   pair: z.enum(['XAUUSD', 'GBPJPY', 'EURUSD'], { required_error: 'Please select a pair.' }),
   type: z.enum(['buy', 'sell'], { required_error: 'Please select a trade type.' }),
   profit: z.coerce.number(),
-  outcome: z.enum(['tp', 'sl'], { required_error: 'Please select an outcome.' }),
+  outcome: z.enum(['tp', 'sl', 'breakeven'], { required_error: 'Please select an outcome.' }),
   riskRewardRatio: z.coerce.number(),
   closeDate: z.date({ required_error: 'Please select a date.' }),
   strategy: z.enum(["Scalping", "Swing Trading", "Day Trading", "Position Trading"], { required_error: 'Please select a strategy.' }),
@@ -80,9 +80,11 @@ export function NewTradeDialog() {
   useEffect(() => {
     if (outcome === 'sl') {
       setValue('riskRewardRatio', -1);
+    } else if (outcome === 'breakeven') {
+      setValue('riskRewardRatio', 0);
     } else {
       // Optional: Reset to a default value when switching back to TP
-      if (form.getValues('riskRewardRatio') === -1) {
+      if (form.getValues('riskRewardRatio') <= 0) {
         setValue('riskRewardRatio', 1);
       }
     }
@@ -198,19 +200,25 @@ export function NewTradeDialog() {
                     <RadioGroup
                       onValueChange={field.onChange}
                       defaultValue={field.value}
-                      className="flex space-x-4"
+                      className="grid grid-cols-3 gap-2"
                     >
-                      <FormItem className="flex items-center space-x-2 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="tp" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Take Profit</FormLabel>
+                      <FormItem>
+                        <RadioGroupItem value="tp" id="tp" className="peer sr-only" />
+                        <FormLabel htmlFor="tp" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer">
+                          Take Profit
+                        </FormLabel>
                       </FormItem>
-                      <FormItem className="flex items-center space-x-2 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="sl" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Stop Loss</FormLabel>
+                      <FormItem>
+                        <RadioGroupItem value="sl" id="sl" className="peer sr-only" />
+                        <FormLabel htmlFor="sl" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-destructive [&:has([data-state=checked])]:border-destructive cursor-pointer">
+                          Stop Loss
+                        </FormLabel>
+                      </FormItem>
+                      <FormItem>
+                        <RadioGroupItem value="breakeven" id="breakeven" className="peer sr-only" />
+                         <FormLabel htmlFor="breakeven" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-yellow-500 [&:has([data-state=checked])]:border-yellow-500 cursor-pointer">
+                          Breakeven
+                        </FormLabel>
                       </FormItem>
                     </RadioGroup>
                   </FormControl>
@@ -240,7 +248,7 @@ export function NewTradeDialog() {
                   <FormItem>
                     <FormLabel>Risk/Reward Ratio</FormLabel>
                     <FormControl>
-                      <Input type="number" step="any" placeholder="e.g. 2.5" {...field} disabled={outcome === 'sl'} />
+                      <Input type="number" step="any" placeholder="e.g. 2.5" {...field} disabled={outcome === 'sl' || outcome === 'breakeven'} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

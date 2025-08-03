@@ -9,7 +9,7 @@ const tradeSchema = z.object({
   pair: z.enum(['XAUUSD', 'GBPJPY', 'EURUSD']),
   type: z.enum(['buy', 'sell']),
   profit: z.coerce.number(),
-  outcome: z.enum(['tp', 'sl']),
+  outcome: z.enum(['tp', 'sl', 'breakeven']),
   riskRewardRatio: z.coerce.number(),
   closeDate: z.coerce.date(),
   strategy: z.enum(["Scalping", "Swing Trading", "Day Trading", "Position Trading"]),
