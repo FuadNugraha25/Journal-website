@@ -56,7 +56,7 @@ export function TradesTable({ trades }: { trades: Trade[] }) {
                     <TableCell
                     className={cn(
                         'text-right font-semibold',
-                        trade.profit >= 0 ? 'text-accent' : 'text-destructive'
+                        trade.profit >= 0 ? 'text-green-400' : 'text-destructive'
                     )}
                     >
                     {trade.profit >= 0 ? '+' : ''}
