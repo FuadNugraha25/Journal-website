@@ -2,10 +2,20 @@
 
 import { useMemo, useState } from 'react';
 import type { Trade } from '@/lib/types';
-import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
-import { format, isSameDay } from 'date-fns';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import {
+  format,
+  isSameDay,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  getDay,
+  subMonths,
+  addMonths,
+  isToday,
+} from 'date-fns';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from './ui/button';
 
 type DailyStats = {
   totalProfit: number;
@@ -17,30 +27,6 @@ function formatCurrency(value: number) {
     return `$${(value / 1000).toFixed(1)}K`;
   }
   return `$${value.toFixed(0)}`;
-}
-
-function DayCell({ date, stats }: { date: Date, stats: DailyStats | undefined }) {
-  if (!stats || stats.tradeCount === 0) {
-    return <div className="h-full w-full p-2 text-left">{format(date, 'd')}</div>;
-  }
-
-  return (
-    <div className={cn(
-      "h-full w-full p-2 flex flex-col justify-between text-left",
-      stats.totalProfit > 0 ? 'bg-green-800/20' : 'bg-red-800/20'
-    )}>
-      <span className="font-bold">{format(date, 'd')}</span>
-      <div className="text-right">
-        <p className={cn(
-          "font-bold text-sm",
-          stats.totalProfit > 0 ? 'text-green-400' : 'text-red-400'
-        )}>
-          {formatCurrency(stats.totalProfit)}
-        </p>
-        <p className="text-xs text-muted-foreground">{stats.tradeCount} trades</p>
-      </div>
-    </div>
-  )
 }
 
 export function TradeCalendar({ trades }: { trades: Trade[] }) {
@@ -58,24 +44,71 @@ export function TradeCalendar({ trades }: { trades: Trade[] }) {
     });
     return stats;
   }, [trades]);
-  
+
+  const daysInMonth = useMemo(() => {
+    const start = startOfMonth(currentMonth);
+    const end = endOfMonth(currentMonth);
+    return eachDayOfInterval({ start, end });
+  }, [currentMonth]);
+
+  const startingDayOfWeek = getDay(startOfMonth(currentMonth));
+  const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  const handlePrevMonth = () => {
+    setCurrentMonth(subMonths(currentMonth, 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentMonth(addMonths(currentMonth, 1));
+  };
+
   return (
-    <Calendar
-        month={currentMonth}
-        onMonthChange={setCurrentMonth}
-        components={{
-            DayContent: ({ date }) => {
-                const dayKey = format(date, 'yyyy-MM-dd');
-                return <DayCell date={date} stats={dailyStats[dayKey]} />;
-            },
-        }}
-        classNames={{
-            day: 'h-24 w-full p-0 text-left align-top',
-            day_selected: '',
-            day_today: 'bg-accent text-accent-foreground',
-            head_cell: 'w-full',
-            row: 'w-full flex'
-        }}
-    />
+    <div className="w-full">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold">{format(currentMonth, 'MMMM yyyy')}</h3>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="icon" onClick={handlePrevMonth}>
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="icon" onClick={handleNextMonth}>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+      <div className="grid grid-cols-7 border-t border-l border-border">
+        {daysOfWeek.map((day) => (
+          <div key={day} className="p-2 text-center text-xs font-medium text-muted-foreground border-b border-r border-border">
+            {day}
+          </div>
+        ))}
+        {Array.from({ length: startingDayOfWeek }).map((_, index) => (
+          <div key={`empty-${index}`} className="border-b border-r border-border" />
+        ))}
+        {daysInMonth.map((day) => {
+          const dayKey = format(day, 'yyyy-MM-dd');
+          const stats = dailyStats[dayKey];
+          return (
+            <div
+              key={day.toString()}
+              className={cn(
+                'h-28 p-2 flex flex-col border-b border-r border-border',
+                stats && stats.tradeCount > 0 ? (stats.totalProfit > 0 ? 'bg-green-800/20' : 'bg-red-800/20') : '',
+                isToday(day) ? 'bg-accent text-accent-foreground' : ''
+              )}
+            >
+              <span className={cn('font-semibold', isToday(day) ? 'text-blue-500' : '')}>{format(day, 'd')}</span>
+              {stats && (
+                <div className="mt-auto text-right">
+                  <p className={cn('font-bold text-sm', stats.totalProfit > 0 ? 'text-green-400' : 'text-red-400')}>
+                    {formatCurrency(stats.totalProfit)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{stats.tradeCount} trade{stats.tradeCount > 1 ? 's' : ''}</p>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
