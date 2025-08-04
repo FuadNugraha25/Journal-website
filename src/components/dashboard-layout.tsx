@@ -6,7 +6,7 @@ import { StatsCard } from './stats-card';
 import { PerformanceChart } from './performance-chart';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { DollarSign, Percent, BarChart, ArrowRightLeft, Trophy, Target } from 'lucide-react';
+import { DollarSign, Percent, BarChart, ArrowRightLeft, Trophy, Target, TrendingUp, TrendingDown, CircleDollarSign } from 'lucide-react';
 
 type Filter = {
   pair: 'all' | TradePair;
@@ -26,12 +26,19 @@ export function DashboardLayout({ initialTrades }: { initialTrades: Trade[] }) {
   const stats = useMemo(() => {
     const totalTrades = filteredTrades.length;
     if (totalTrades === 0) {
-      return { totalPnl: 0, winRate: 0, totalTrades: 0, avgPnl: 0, bestStrategyByWinRate: { name: 'N/A', winRate: 0}, bestStrategyByAvgRR: { name: 'N/A', avgRR: 0 } };
+      return { netProfit: 0, grossProfit: 0, roi: 0, winRate: 0, totalTrades: 0, avgPnl: 0, bestStrategyByWinRate: { name: 'N/A', winRate: 0}, bestStrategyByAvgRR: { name: 'N/A', avgRR: 0 } };
     }
-    const totalPnl = filteredTrades.reduce((acc, trade) => acc + trade.profit, 0);
-    const winningTrades = filteredTrades.filter((trade) => trade.profit > 0).length;
-    const winRate = (winningTrades / totalTrades) * 100;
-    const avgPnl = totalPnl / totalTrades;
+    const netProfit = filteredTrades.reduce((acc, trade) => acc + trade.profit, 0);
+    const winningTradesList = filteredTrades.filter((trade) => trade.profit > 0);
+    const losingTradesList = filteredTrades.filter((trade) => trade.profit < 0);
+
+    const grossProfit = winningTradesList.reduce((acc, trade) => acc + trade.profit, 0);
+    const grossLoss = losingTradesList.reduce((acc, trade) => acc + trade.profit, 0);
+    
+    const winRate = (winningTradesList.length / totalTrades) * 100;
+    const avgPnl = netProfit / totalTrades;
+    const roi = grossLoss !== 0 ? (netProfit / Math.abs(grossLoss)) * 100 : netProfit > 0 ? Infinity : 0;
+
 
     const tradesByStrategy = filteredTrades.reduce((acc, trade) => {
         if (!acc[trade.strategy]) {
@@ -71,7 +78,9 @@ export function DashboardLayout({ initialTrades }: { initialTrades: Trade[] }) {
 
 
     return {
-      totalPnl,
+      netProfit,
+      grossProfit,
+      roi,
       winRate,
       totalTrades,
       avgPnl,
@@ -104,10 +113,10 @@ export function DashboardLayout({ initialTrades }: { initialTrades: Trade[] }) {
         </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatsCard title="Total P/L" value={stats.totalPnl.toFixed(2)} icon={DollarSign} prefix="$" />
+        <StatsCard title="Net Profit" value={stats.netProfit.toFixed(2)} icon={DollarSign} prefix="$" />
+        <StatsCard title="Gross Profit" value={stats.grossProfit.toFixed(2)} icon={TrendingUp} prefix="$" />
         <StatsCard title="Win Rate" value={stats.winRate.toFixed(2)} icon={Percent} suffix="%" />
-        <StatsCard title="Total Trades" value={stats.totalTrades.toString()} icon={BarChart} />
-        <StatsCard title="Avg. P/L / Trade" value={stats.avgPnl.toFixed(2)} icon={ArrowRightLeft} prefix="$" />
+        <StatsCard title="ROI" value={stats.roi === Infinity ? '∞' : stats.roi.toFixed(2)} icon={CircleDollarSign} suffix="%" />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
