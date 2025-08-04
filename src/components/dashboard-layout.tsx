@@ -7,7 +7,7 @@ import { PerformanceChart } from './performance-chart';
 import { TradesTable } from './trades-table';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { DollarSign, Percent, BarChart, ArrowRightLeft } from 'lucide-react';
+import { DollarSign, Percent, BarChart, ArrowRightLeft, Trophy, Target } from 'lucide-react';
 
 type Filter = {
   pair: 'all' | TradePair;
@@ -27,17 +27,55 @@ export function DashboardLayout({ initialTrades }: { initialTrades: Trade[] }) {
   const stats = useMemo(() => {
     const totalTrades = filteredTrades.length;
     if (totalTrades === 0) {
-      return { totalPnl: 0, winRate: 0, totalTrades: 0, avgPnl: 0 };
+      return { totalPnl: 0, winRate: 0, totalTrades: 0, avgPnl: 0, bestStrategyByWinRate: { name: 'N/A', winRate: 0}, bestStrategyByAvgRR: { name: 'N/A', avgRR: 0 } };
     }
     const totalPnl = filteredTrades.reduce((acc, trade) => acc + trade.profit, 0);
     const winningTrades = filteredTrades.filter((trade) => trade.profit > 0).length;
     const winRate = (winningTrades / totalTrades) * 100;
     const avgPnl = totalPnl / totalTrades;
+
+    const tradesByStrategy = filteredTrades.reduce((acc, trade) => {
+        if (!acc[trade.strategy]) {
+            acc[trade.strategy] = [];
+        }
+        acc[trade.strategy].push(trade);
+        return acc;
+    }, {} as Record<string, Trade[]>);
+
+    let bestStrategyByWinRate = { name: 'N/A', winRate: 0 };
+    let bestStrategyByAvgRR = { name: 'N/A', avgRR: 0 };
+
+    let maxWinRate = -1;
+    let maxAvgRR = -Infinity;
+
+    for (const strategy in tradesByStrategy) {
+        const strategyTrades = tradesByStrategy[strategy];
+        const totalStrategyTrades = strategyTrades.length;
+        const winningStrategyTrades = strategyTrades.filter(t => t.profit > 0).length;
+        const strategyWinRate = (winningStrategyTrades / totalStrategyTrades) * 100;
+
+        if (strategyWinRate > maxWinRate) {
+            maxWinRate = strategyWinRate;
+            bestStrategyByWinRate = { name: strategy, winRate: strategyWinRate };
+        }
+
+        const totalRR = strategyTrades.reduce((acc, t) => acc + t.riskRewardRatio, 0);
+        const avgRR = totalRR / totalStrategyTrades;
+
+        if (avgRR > maxAvgRR) {
+            maxAvgRR = avgRR;
+            bestStrategyByAvgRR = { name: strategy, avgRR: avgRR };
+        }
+    }
+
+
     return {
       totalPnl,
       winRate,
       totalTrades,
       avgPnl,
+      bestStrategyByWinRate,
+      bestStrategyByAvgRR,
     };
   }, [filteredTrades]);
 
@@ -69,6 +107,11 @@ export function DashboardLayout({ initialTrades }: { initialTrades: Trade[] }) {
         <StatsCard title="Win Rate" value={stats.winRate.toFixed(2)} icon={Percent} suffix="%" />
         <StatsCard title="Total Trades" value={stats.totalTrades.toString()} icon={BarChart} />
         <StatsCard title="Avg. P/L / Trade" value={stats.avgPnl.toFixed(2)} icon={ArrowRightLeft} prefix="$" />
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <StatsCard title="Best Strategy (Win Rate)" value={`${stats.bestStrategyByWinRate.name} (${stats.bestStrategyByWinRate.winRate.toFixed(1)}%)`} icon={Trophy} />
+        <StatsCard title="Best Strategy (Avg. R/R)" value={`${stats.bestStrategyByAvgRR.name} (${stats.bestStrategyByAvgRR.avgRR.toFixed(2)}R)`} icon={Target} />
       </div>
 
       <div className="grid gap-4 grid-cols-1">
