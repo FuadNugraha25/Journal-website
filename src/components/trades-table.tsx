@@ -18,15 +18,13 @@ export function TradesTable({ trades }: { trades: Trade[] }) {
   const getOutcomeStyles = (outcome: Trade['outcome']) => {
     switch (outcome) {
       case 'tp':
-        return 'text-green-400';
       case 'cp':
-        return 'text-green-600';
+        return 'text-green-400';
       case 'sl':
-        return 'text-red-400';
       case 'cl':
-        return 'text-red-600';
+        return 'text-red-400';
       case 'breakeven':
-        return 'text-yellow-400';
+        return 'text-muted-foreground';
       default:
         return 'text-foreground';
     }
