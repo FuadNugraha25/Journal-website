@@ -5,7 +5,7 @@ import { useFormState } from 'react-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { CalendarIcon, Loader2, PlusCircle, Settings } from 'lucide-react';
+import { CalendarIcon, Loader2, PlusCircle, Settings, ClipboardPaste, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -49,6 +49,7 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from '@/components/ui/tooltip';
+import Image from 'next/image';
 
 const tradeSchema = z.object({
   pair: z.enum(['XAUUSD', 'GBPJPY', 'EURUSD'], { required_error: 'Please select a pair.' }),
@@ -59,6 +60,7 @@ const tradeSchema = z.object({
   closeDate: z.date({ required_error: 'Please select a date.' }),
   strategy: z.string({ required_error: 'Please select a strategy.' }),
   session: z.enum(['Asian', 'London', 'New York'], { required_error: 'Please select a session.' }),
+  image: z.string().optional(),
 });
 
 type TradeFormValues = z.infer<typeof tradeSchema>;
@@ -73,6 +75,7 @@ export function NewTradeDialog() {
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const [strategies, setStrategies] = useState<string[]>([]);
+  const [pastedImage, setPastedImage] = useState<string | null>(null);
 
   useEffect(() => {
     getStrategies().then(setStrategies);
@@ -87,7 +90,7 @@ export function NewTradeDialog() {
     },
   });
 
-  const { formState: RHFFormState, watch, setValue } = form;
+  const { formState: RHFFormState, watch, setValue, reset } = form;
   const outcome = watch('outcome');
   const type = watch('type');
 
@@ -112,7 +115,8 @@ export function NewTradeDialog() {
         description: formState.message,
       });
       setOpen(false);
-      form.reset();
+      reset();
+      setPastedImage(null);
     } else if (formState.message && formState.errors) {
       toast({
         variant: 'destructive',
@@ -120,22 +124,44 @@ export function NewTradeDialog() {
         description: formState.message,
       });
     }
-  }, [formState, toast, form]);
+  }, [formState, toast, reset]);
 
   const onFormSubmit = (data: TradeFormValues) => {
     const formData = new FormData();
-    formData.append('pair', data.pair);
-    formData.append('type', data.type);
-    formData.append('profit', String(data.profit));
-    formData.append('riskRewardRatio', String(data.riskRewardRatio));
-    formData.append('closeDate', data.closeDate.toISOString());
-    formData.append('strategy', data.strategy);
-    formData.append('session', data.session);
-    formData.append('outcome', data.outcome);
-    
+    Object.entries(data).forEach(([key, value]) => {
+        if (value instanceof Date) {
+            formData.append(key, value.toISOString());
+        } else if (value !== undefined && value !== null) {
+            formData.append(key, String(value));
+        }
+    });
     formAction(formData);
   };
-  
+
+  const handlePaste = (event: React.ClipboardEvent<HTMLDivElement>) => {
+    const items = event.clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+            const blob = items[i].getAsFile();
+            if (blob) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const dataUrl = e.target?.result as string;
+                    setPastedImage(dataUrl);
+                    setValue('image', dataUrl, { shouldValidate: true });
+                };
+                reader.readAsDataURL(blob);
+            }
+            event.preventDefault();
+            break;
+        }
+    }
+  };
+
+  const handleClearImage = () => {
+    setPastedImage(null);
+    setValue('image', undefined, { shouldValidate: true });
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -158,6 +184,41 @@ export function NewTradeDialog() {
             onSubmit={form.handleSubmit(onFormSubmit)}
             className="space-y-4"
           >
+             <FormField
+                control={form.control}
+                name="image"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Trade Image</FormLabel>
+                    <FormControl>
+                        {pastedImage ? (
+                            <div className="relative">
+                                <Image src={pastedImage} alt="Pasted trade setup" width={500} height={300} className="rounded-md border object-contain"/>
+                                <Button variant="destructive" size="icon" className="absolute top-2 right-2 h-6 w-6" onClick={handleClearImage}>
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        ) : (
+                            <div 
+                                onPaste={handlePaste}
+                                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted/80"
+                            >
+                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <ClipboardPaste className="w-8 h-8 mb-4 text-muted-foreground" />
+                                    <p className="mb-2 text-sm text-muted-foreground">
+                                    <span className="font-semibold">Click or paste image</span>
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">Paste a screenshot of your trade</p>
+                                </div>
+                                <input type="hidden" {...field} />
+                            </div>
+                        )}
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -393,5 +454,3 @@ function OutcomeOption({ value, label, description }: { value: TradeOutcome, lab
     </TooltipProvider>
   );
 }
-
-    

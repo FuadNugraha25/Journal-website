@@ -14,4 +14,5 @@ export interface Trade {
   strategy: TradeStrategy;
   session: TradeSession;
   outcome: TradeOutcome;
+  image?: string;
 }

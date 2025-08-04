@@ -16,6 +16,9 @@ const AiTradeAnalyzerInputSchema = z.object({
   tradingHistory: z.string().describe(
     'A detailed record of trading history for XAUUSD, GBPJPY, and EURUSD pairs, including trade type, Profit/Loss (P/L), and Risk/Reward Ratio (R/R).'
   ),
+  tradeImage: z.string().optional().describe(
+    "A trade setup image, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+  ),
 });
 export type AiTradeAnalyzerInput = z.infer<typeof AiTradeAnalyzerInputSchema>;
 
@@ -35,9 +38,17 @@ const prompt = ai.definePrompt({
   input: {schema: AiTradeAnalyzerInputSchema},
   output: {schema: AiTradeAnalyzerOutputSchema},
   prompt: `You are an expert trading analyst specializing in forex, particularly XAUUSD, GBPJPY, and EURUSD pairs. Analyze the provided trading history to identify patterns, strengths, and weaknesses. Generate a detailed report with personalized improvement suggestions and potential opportunities based on the user's trading data. Pay close attention to the Risk/Reward ratio and P/L of each trade. Also, identify market factors, or past trading tendencies.
+{{#if tradeImage}}
+Analyze the provided trade setup image as well.
+{{/if}}
 
 Trading History:
 {{{tradingHistory}}}
+
+{{#if tradeImage}}
+Trade Image:
+{{media url=tradeImage}}
+{{/if}}
 
 Report Format: The report should include sections for pattern identification, strength assessment, weakness identification, personalized improvement suggestions, and potential opportunities. Be as specific as possible, and quantify your findings where applicable.
 `,

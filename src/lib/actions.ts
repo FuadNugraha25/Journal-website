@@ -14,6 +14,7 @@ const tradeSchema = z.object({
   closeDate: z.coerce.date(),
   strategy: z.string(),
   session: z.enum(['Asian', 'London', 'New York']),
+  image: z.string().optional(),
 });
 
 export type FormState = {
@@ -27,6 +28,7 @@ export type FormState = {
     strategy?: string[];
     session?: string[];
     outcome?: string[];
+    image?: string[];
   };
 };
 
@@ -45,6 +47,7 @@ export async function addTradeAction(prevState: FormState, formData: FormData): 
     strategy: formData.get('strategy'),
     session: formData.get('session'),
     outcome: formData.get('outcome'),
+    image: formData.get('image'),
   });
   
   if (!validatedFields.success) {
@@ -64,6 +67,7 @@ export async function addTradeAction(prevState: FormState, formData: FormData): 
       strategy: validatedFields.data.strategy as TradeStrategy,
       session: validatedFields.data.session as TradeSession,
       outcome: validatedFields.data.outcome as TradeOutcome,
+      image: validatedFields.data.image,
     });
 
     revalidatePath('/');

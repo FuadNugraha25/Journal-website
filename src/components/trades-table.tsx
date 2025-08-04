@@ -11,7 +11,9 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { TrendingUp, TrendingDown, Ratio } from 'lucide-react';
+import { TrendingUp, TrendingDown, Ratio, Image as ImageIcon } from 'lucide-react';
+import { Dialog, DialogContent, DialogTrigger } from './ui/dialog';
+import Image from 'next/image';
 
 export function TradesTable({ trades }: { trades: Trade[] }) {
   
@@ -31,15 +33,13 @@ export function TradesTable({ trades }: { trades: Trade[] }) {
   }
 
   const getOutcomeBadge = (outcome: Trade['outcome']) => {
-    switch (outcome) {
+     switch (outcome) {
       case 'tp':
-        return 'bg-green-800/50 text-green-300 border-green-700/60';
       case 'cp':
-        return 'bg-green-900/50 text-green-500 border-green-800/60';
+        return 'bg-green-800/50 text-green-300 border-green-700/60';
       case 'sl':
-        return 'bg-red-800/50 text-red-300 border-red-700/60';
       case 'cl':
-        return 'bg-red-900/50 text-red-500 border-red-800/60';
+        return 'bg-red-800/50 text-red-300 border-red-700/60';
       case 'breakeven':
         return 'bg-yellow-800/50 text-yellow-300 border-yellow-700/60';
       default:
@@ -65,13 +65,14 @@ export function TradesTable({ trades }: { trades: Trade[] }) {
                 <TableHead>Outcome</TableHead>
                 <TableHead>Close Date</TableHead>
                 <TableHead>R/R</TableHead>
+                <TableHead>Image</TableHead>
                 <TableHead className="text-right">P/L</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
                 {trades.length === 0 && (
                     <TableRow>
-                        <TableCell colSpan={8} className="h-24 text-center">
+                        <TableCell colSpan={9} className="h-24 text-center">
                             No trades found.
                         </TableCell>
                     </TableRow>
@@ -96,6 +97,21 @@ export function TradesTable({ trades }: { trades: Trade[] }) {
                     <TableCell className="font-mono text-xs flex items-center gap-1">
                       <Ratio className="h-3 w-3 text-muted-foreground" />
                       {trade.riskRewardRatio.toFixed(2)}R
+                    </TableCell>
+                    <TableCell>
+                      {trade.image && (
+                        <Dialog>
+                          <DialogTrigger asChild>
+                             <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+                                <ImageIcon className="h-4 w-4" />
+                                View
+                              </button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-4xl">
+                              <Image src={trade.image} alt={`Trade ${trade.id}`} width={1200} height={800} className="rounded-md" />
+                          </DialogContent>
+                        </Dialog>
+                      )}
                     </TableCell>
                     <TableCell
                     className={cn(
