@@ -4,7 +4,6 @@ import { useMemo, useState } from 'react';
 import type { Trade, TradePair } from '@/lib/types';
 import { StatsCard } from './stats-card';
 import { PerformanceChart } from './performance-chart';
-import { TradesTable } from './trades-table';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { DollarSign, Percent, BarChart, ArrowRightLeft, Trophy, Target } from 'lucide-react';
@@ -51,6 +50,8 @@ export function DashboardLayout({ initialTrades }: { initialTrades: Trade[] }) {
     for (const strategy in tradesByStrategy) {
         const strategyTrades = tradesByStrategy[strategy];
         const totalStrategyTrades = strategyTrades.length;
+        if(totalStrategyTrades === 0) continue;
+        
         const winningStrategyTrades = strategyTrades.filter(t => t.profit > 0).length;
         const strategyWinRate = (winningStrategyTrades / totalStrategyTrades) * 100;
 
@@ -123,10 +124,6 @@ export function DashboardLayout({ initialTrades }: { initialTrades: Trade[] }) {
             <PerformanceChart trades={filteredTrades} />
           </CardContent>
         </Card>
-      </div>
-
-      <div>
-        <TradesTable trades={filteredTrades} />
       </div>
     </div>
   );
