@@ -155,7 +155,6 @@ export function NewTradeDialog() {
         <Form {...form}>
           <form
             ref={formRef}
-            action={formAction}
             onSubmit={form.handleSubmit(onFormSubmit)}
             className="space-y-4"
           >
@@ -352,7 +351,10 @@ export function NewTradeDialog() {
               )}
             />
             <DialogFooter>
-              <SubmitButton pending={RHFFormState.isSubmitting} />
+              <Button type="submit" disabled={RHFFormState.isSubmitting}>
+                  {RHFFormState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Save changes
+              </Button>
             </DialogFooter>
           </form>
         </Form>
@@ -376,7 +378,9 @@ function OutcomeOption({ value, label, description }: { value: TradeOutcome, lab
       <Tooltip>
         <TooltipTrigger asChild>
           <FormItem>
-            <RadioGroupItem value={value} id={value} className="peer sr-only" />
+            <FormControl>
+              <RadioGroupItem value={value} id={value} className="peer sr-only" />
+            </FormControl>
             <FormLabel htmlFor={value} className={cn(baseClasses, stateClasses[value])}>
               {label}
             </FormLabel>
@@ -390,11 +394,4 @@ function OutcomeOption({ value, label, description }: { value: TradeOutcome, lab
   );
 }
 
-function SubmitButton({ pending }: { pending: boolean }) {
-    return (
-        <Button type="submit" disabled={pending}>
-            {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save changes
-        </Button>
-    )
-}
+    
