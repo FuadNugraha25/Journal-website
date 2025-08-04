@@ -4,10 +4,11 @@ import { useMemo, useState, useEffect } from 'react';
 import type { Trade, TradePair } from '@/lib/types';
 import { StatsCard } from './stats-card';
 import { PerformanceChart } from './performance-chart';
-import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from './ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { DollarSign, Percent, Banknote, Trophy, Target, TrendingUp, TrendingDown, CircleDollarSign, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 import { getInitialCapital } from '@/lib/data';
+import { TradeCalendar } from './trade-calendar';
 
 type Filter = {
   pair: 'all' | TradePair;
@@ -110,7 +111,8 @@ export function DashboardLayout({ initialTrades }: { initialTrades: Trade[] }) {
   };
   
   return (
-    <div className="flex flex-col gap-4">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="lg:col-span-2 flex flex-col gap-4">
         <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold font-headline tracking-tight">Performance Overview</h2>
             <div className="w-[180px]">
@@ -132,14 +134,14 @@ export function DashboardLayout({ initialTrades }: { initialTrades: Trade[] }) {
         <StatsCard title="Initial Capital" value={initialCapital !== null ? initialCapital.toFixed(2) : '...'} icon={Banknote} prefix="$" />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
         <StatsCard title="Net Profit" value={stats.netProfit.toFixed(2)} icon={DollarSign} prefix="$" />
         <StatsCard title="Gross Profit" value={stats.grossProfit.toFixed(2)} icon={TrendingUp} prefix="$" />
         <StatsCard title="Win Rate" value={stats.winRate.toFixed(2)} icon={Percent} suffix="%" />
         <StatsCard title="ROI" value={stats.roi.toFixed(2)} icon={CircleDollarSign} suffix="%" />
       </div>
       
-       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
         <StatsCard title="Avg. Profit" value={stats.averageProfit.toFixed(2)} icon={ArrowUpCircle} prefix="$" />
         <StatsCard title="Avg. Loss" value={stats.averageLoss.toFixed(2)} icon={ArrowDownCircle} prefix="$" />
         <StatsCard title="Biggest Profit" value={stats.biggestProfit.toFixed(2)} icon={TrendingUp} prefix="$" />
@@ -160,6 +162,20 @@ export function DashboardLayout({ initialTrades }: { initialTrades: Trade[] }) {
             <PerformanceChart trades={filteredTrades} />
           </CardContent>
         </Card>
+      </div>
+      </div>
+       <div className="lg:col-span-1">
+         <Card className="h-full">
+            <CardHeader>
+              <CardTitle className="font-headline">Trading Calendar</CardTitle>
+              <CardDescription>
+                An overview of your trading activity by day.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TradeCalendar trades={initialTrades} />
+            </CardContent>
+          </Card>
       </div>
     </div>
   );
