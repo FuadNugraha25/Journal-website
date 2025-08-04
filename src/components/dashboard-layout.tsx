@@ -6,7 +6,7 @@ import { StatsCard } from './stats-card';
 import { PerformanceChart } from './performance-chart';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { DollarSign, Percent, Banknote, Trophy, Target, TrendingUp, TrendingDown, CircleDollarSign } from 'lucide-react';
+import { DollarSign, Percent, Banknote, Trophy, Target, TrendingUp, TrendingDown, CircleDollarSign, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 import { getInitialCapital } from '@/lib/data';
 
 type Filter = {
@@ -32,12 +32,20 @@ export function DashboardLayout({ initialTrades }: { initialTrades: Trade[] }) {
   const stats = useMemo(() => {
     const totalTrades = filteredTrades.length;
     if (totalTrades === 0) {
-      return { netProfit: 0, grossProfit: 0, roi: 0, winRate: 0, totalTrades: 0, avgPnl: 0, bestStrategyByWinRate: { name: 'N/A', winRate: 0}, bestStrategyByAvgRR: { name: 'N/A', avgRR: 0 } };
+      return { netProfit: 0, grossProfit: 0, roi: 0, winRate: 0, totalTrades: 0, avgPnl: 0, bestStrategyByWinRate: { name: 'N/A', winRate: 0}, bestStrategyByAvgRR: { name: 'N/A', avgRR: 0 }, averageProfit: 0, averageLoss: 0, biggestProfit: 0, biggestLoss: 0 };
     }
     const netProfit = filteredTrades.reduce((acc, trade) => acc + trade.profit, 0);
     const winningTradesList = filteredTrades.filter((trade) => trade.profit > 0);
+    const losingTradesList = filteredTrades.filter((trade) => trade.profit < 0);
     
     const grossProfit = winningTradesList.reduce((acc, trade) => acc + trade.profit, 0);
+    const grossLoss = losingTradesList.reduce((acc, trade) => acc + trade.profit, 0);
+
+    const averageProfit = winningTradesList.length > 0 ? grossProfit / winningTradesList.length : 0;
+    const averageLoss = losingTradesList.length > 0 ? grossLoss / losingTradesList.length : 0;
+
+    const biggestProfit = Math.max(0, ...filteredTrades.map(t => t.profit));
+    const biggestLoss = Math.min(0, ...filteredTrades.map(t => t.profit));
     
     const winRate = (winningTradesList.length / totalTrades) * 100;
     const avgPnl = netProfit / totalTrades;
@@ -90,6 +98,10 @@ export function DashboardLayout({ initialTrades }: { initialTrades: Trade[] }) {
       avgPnl,
       bestStrategyByWinRate,
       bestStrategyByAvgRR,
+      averageProfit,
+      averageLoss,
+      biggestProfit,
+      biggestLoss
     };
   }, [filteredTrades, initialCapital]);
 
@@ -125,6 +137,13 @@ export function DashboardLayout({ initialTrades }: { initialTrades: Trade[] }) {
         <StatsCard title="Gross Profit" value={stats.grossProfit.toFixed(2)} icon={TrendingUp} prefix="$" />
         <StatsCard title="Win Rate" value={stats.winRate.toFixed(2)} icon={Percent} suffix="%" />
         <StatsCard title="ROI" value={stats.roi.toFixed(2)} icon={CircleDollarSign} suffix="%" />
+      </div>
+      
+       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <StatsCard title="Avg. Profit" value={stats.averageProfit.toFixed(2)} icon={ArrowUpCircle} prefix="$" />
+        <StatsCard title="Avg. Loss" value={stats.averageLoss.toFixed(2)} icon={ArrowDownCircle} prefix="$" />
+        <StatsCard title="Biggest Profit" value={stats.biggestProfit.toFixed(2)} icon={TrendingUp} prefix="$" />
+        <StatsCard title="Biggest Loss" value={stats.biggestLoss.toFixed(2)} icon={TrendingDown} prefix="$" />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
