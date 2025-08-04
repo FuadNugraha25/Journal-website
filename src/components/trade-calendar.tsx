@@ -98,11 +98,11 @@ export function TradeCalendar({ trades }: { trades: Trade[] }) {
             >
               <span className={cn('font-semibold', isToday(day) ? 'text-blue-500' : '')}>{format(day, 'd')}</span>
               {stats && (
-                <div className="mt-auto text-right">
-                  <p className={cn('font-bold text-sm', stats.totalProfit > 0 ? 'text-green-400' : 'text-red-400')}>
+                <div className="flex-1 flex flex-col items-center justify-center">
+                  <p className={cn('font-bold text-lg', stats.totalProfit > 0 ? 'text-green-400' : 'text-red-400')}>
                     {formatCurrency(stats.totalProfit)}
                   </p>
-                  <p className="text-xs text-muted-foreground">{stats.tradeCount} trade{stats.tradeCount > 1 ? 's' : ''}</p>
+                  <p className="text-sm text-muted-foreground">{stats.tradeCount} trade{stats.tradeCount > 1 ? 's' : ''}</p>
                 </div>
               )}
             </div>
