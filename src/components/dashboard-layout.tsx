@@ -6,7 +6,7 @@ import { StatsCard } from './stats-card';
 import { PerformanceChart } from './performance-chart';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { DollarSign, Percent, BarChart, ArrowRightLeft, Trophy, Target, TrendingUp, TrendingDown, CircleDollarSign } from 'lucide-react';
+import { DollarSign, Percent, Banknote, Trophy, Target, TrendingUp, TrendingDown, CircleDollarSign } from 'lucide-react';
 import { getInitialCapital } from '@/lib/data';
 
 type Filter = {
@@ -116,7 +116,8 @@ export function DashboardLayout({ initialTrades }: { initialTrades: Trade[] }) {
             </div>
         </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+        <StatsCard title="Initial Capital" value={initialCapital !== null ? initialCapital.toFixed(2) : '...'} icon={Banknote} prefix="$" />
         <StatsCard title="Net Profit" value={stats.netProfit.toFixed(2)} icon={DollarSign} prefix="$" />
         <StatsCard title="Gross Profit" value={stats.grossProfit.toFixed(2)} icon={TrendingUp} prefix="$" />
         <StatsCard title="Win Rate" value={stats.winRate.toFixed(2)} icon={Percent} suffix="%" />
