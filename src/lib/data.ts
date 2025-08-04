@@ -1,6 +1,7 @@
 import type { Trade, TradePair, TradeType, TradeSession, TradeStrategy, TradeOutcome } from './types';
 
 let strategies: TradeStrategy[] = ["Scalping", "Swing Trading", "Day Trading", "Position Trading"];
+let initialCapital = 10000;
 
 // In-memory store for trades to act as a mock database.
 let trades: Trade[] = [
@@ -39,4 +40,12 @@ export async function updateStrategies(newStrategies: TradeStrategy[]): Promise<
 
 export async function addStrategy(strategy: TradeStrategy): Promise<void> {
   strategies.push(strategy);
+}
+
+export async function getInitialCapital(): Promise<number> {
+    return initialCapital;
+}
+
+export async function updateInitialCapital(newCapital: number): Promise<void> {
+    initialCapital = newCapital;
 }

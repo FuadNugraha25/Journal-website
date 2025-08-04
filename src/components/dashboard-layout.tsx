@@ -1,12 +1,13 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import type { Trade, TradePair } from '@/lib/types';
 import { StatsCard } from './stats-card';
 import { PerformanceChart } from './performance-chart';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { DollarSign, Percent, BarChart, ArrowRightLeft, Trophy, Target, TrendingUp, TrendingDown, CircleDollarSign } from 'lucide-react';
+import { getInitialCapital } from '@/lib/data';
 
 type Filter = {
   pair: 'all' | TradePair;
@@ -15,6 +16,11 @@ type Filter = {
 export function DashboardLayout({ initialTrades }: { initialTrades: Trade[] }) {
   const [trades, setTrades] = useState<Trade[]>(initialTrades);
   const [filters, setFilters] = useState<Filter>({ pair: 'all' });
+  const [initialCapital, setInitialCapital] = useState<number | null>(null);
+
+  useEffect(() => {
+    getInitialCapital().then(setInitialCapital);
+  }, []);
 
   const filteredTrades = useMemo(() => {
     return trades.filter((trade) => {
@@ -30,14 +36,12 @@ export function DashboardLayout({ initialTrades }: { initialTrades: Trade[] }) {
     }
     const netProfit = filteredTrades.reduce((acc, trade) => acc + trade.profit, 0);
     const winningTradesList = filteredTrades.filter((trade) => trade.profit > 0);
-    const losingTradesList = filteredTrades.filter((trade) => trade.profit < 0);
-
+    
     const grossProfit = winningTradesList.reduce((acc, trade) => acc + trade.profit, 0);
-    const grossLoss = losingTradesList.reduce((acc, trade) => acc + trade.profit, 0);
     
     const winRate = (winningTradesList.length / totalTrades) * 100;
     const avgPnl = netProfit / totalTrades;
-    const roi = grossLoss !== 0 ? (netProfit / Math.abs(grossLoss)) * 100 : netProfit > 0 ? Infinity : 0;
+    const roi = initialCapital && initialCapital > 0 ? (netProfit / initialCapital) * 100 : 0;
 
 
     const tradesByStrategy = filteredTrades.reduce((acc, trade) => {
@@ -87,7 +91,7 @@ export function DashboardLayout({ initialTrades }: { initialTrades: Trade[] }) {
       bestStrategyByWinRate,
       bestStrategyByAvgRR,
     };
-  }, [filteredTrades]);
+  }, [filteredTrades, initialCapital]);
 
   const handleFilterChange = (pair: 'all' | TradePair) => {
     setFilters({ pair });
@@ -116,7 +120,7 @@ export function DashboardLayout({ initialTrades }: { initialTrades: Trade[] }) {
         <StatsCard title="Net Profit" value={stats.netProfit.toFixed(2)} icon={DollarSign} prefix="$" />
         <StatsCard title="Gross Profit" value={stats.grossProfit.toFixed(2)} icon={TrendingUp} prefix="$" />
         <StatsCard title="Win Rate" value={stats.winRate.toFixed(2)} icon={Percent} suffix="%" />
-        <StatsCard title="ROI" value={stats.roi === Infinity ? '∞' : stats.roi.toFixed(2)} icon={CircleDollarSign} suffix="%" />
+        <StatsCard title="ROI" value={stats.roi.toFixed(2)} icon={CircleDollarSign} suffix="%" />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

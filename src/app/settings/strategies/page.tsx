@@ -1,13 +1,16 @@
 import { Header } from "@/components/header";
-import { getStrategies } from "@/lib/data";
+import { getStrategies, getInitialCapital } from "@/lib/data";
 import { StrategyManager } from "./strategy-manager";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { CapitalManager } from "./capital-manager";
+import { Separator } from "@/components/ui/separator";
 
 export default async function StrategySettingsPage() {
     const strategies = await getStrategies();
+    const initialCapital = await getInitialCapital();
 
     return (
         <div className="flex min-h-screen w-full flex-col bg-background">
@@ -22,10 +25,18 @@ export default async function StrategySettingsPage() {
                             </Link>
                         </Button>
                         <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
-                            Strategy Settings
+                            Settings
                         </h1>
                     </div>
                     <Card>
+                        <CardHeader>
+                            <CardTitle>Initial Capital</CardTitle>
+                            <CardDescription>
+                                Set your initial trading capital to accurately calculate ROI.
+                            </CardDescription>
+                        </CardHeader>
+                       <CapitalManager initialCapital={initialCapital} />
+                        <Separator className="my-4" />
                         <CardHeader>
                             <CardTitle>Strategy Management</CardTitle>
                             <CardDescription>

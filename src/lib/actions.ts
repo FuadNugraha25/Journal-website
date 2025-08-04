@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { addTrade, getStrategies, updateStrategies } from './data';
+import { addTrade, getStrategies, updateInitialCapital, updateStrategies } from './data';
 import type { TradePair, TradeType, TradeSession, TradeStrategy, TradeOutcome } from './types';
 
 const tradeSchema = z.object({
@@ -91,4 +91,19 @@ export async function updateStrategiesAction(strategies: string[]): Promise<{ me
   } catch (e) {
     return { message: 'Failed to update strategies.' };
   }
+}
+
+export async function updateInitialCapitalAction(capital: number): Promise<{ message: string }> {
+    try {
+        const validatedCapital = z.number().min(0).safeParse(capital);
+        if(!validatedCapital.success) {
+            return { message: "Invalid capital amount" };
+        }
+        await updateInitialCapital(validatedCapital.data);
+        revalidatePath('/');
+        revalidatePath('/settings/strategies');
+        return { message: 'Initial capital updated successfully.' };
+    } catch (e) {
+        return { message: 'Failed to update initial capital.' };
+    }
 }
