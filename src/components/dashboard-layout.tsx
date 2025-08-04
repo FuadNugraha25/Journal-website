@@ -111,8 +111,8 @@ export function DashboardLayout({ initialTrades }: { initialTrades: Trade[] }) {
   };
   
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      <div className="lg:col-span-2 flex flex-col gap-4">
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+      <div className="lg:col-span-3 flex flex-col gap-4">
         <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold font-headline tracking-tight">Performance Overview</h2>
             <div className="w-[180px]">
@@ -164,7 +164,7 @@ export function DashboardLayout({ initialTrades }: { initialTrades: Trade[] }) {
         </Card>
       </div>
       </div>
-       <div className="lg:col-span-1">
+       <div className="lg:col-span-2">
          <Card className="h-full">
             <CardHeader>
               <CardTitle className="font-headline">Trading Calendar</CardTitle>
