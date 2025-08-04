@@ -116,8 +116,11 @@ export function DashboardLayout({ initialTrades }: { initialTrades: Trade[] }) {
             </div>
         </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1">
         <StatsCard title="Initial Capital" value={initialCapital !== null ? initialCapital.toFixed(2) : '...'} icon={Banknote} prefix="$" />
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatsCard title="Net Profit" value={stats.netProfit.toFixed(2)} icon={DollarSign} prefix="$" />
         <StatsCard title="Gross Profit" value={stats.grossProfit.toFixed(2)} icon={TrendingUp} prefix="$" />
         <StatsCard title="Win Rate" value={stats.winRate.toFixed(2)} icon={Percent} suffix="%" />
