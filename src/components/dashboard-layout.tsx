@@ -4,6 +4,7 @@ import { useMemo, useState, useEffect } from 'react';
 import type { Trade, TradePair } from '@/lib/types';
 import { StatsCard } from './stats-card';
 import { PerformanceChart } from './performance-chart';
+import { PairDistributionChart } from './pair-distribution-chart';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from './ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { DollarSign, Percent, Banknote, Trophy, Target, TrendingUp, TrendingDown, CircleDollarSign, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
@@ -137,7 +138,7 @@ export function DashboardLayout({ initialTrades }: { initialTrades: Trade[] }) {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
         <StatsCard title="Net Profit" value={stats.netProfit.toFixed(2)} icon={DollarSign} prefix="$" />
         <StatsCard title="Gross Profit" value={stats.grossProfit.toFixed(2)} icon={TrendingUp} prefix="$" />
-        <StatsCard title="Win Rate" value={stats.winRate.toFixed(2)} icon={Percent} suffix="%" />
+        <StatsCard title="Win Rate" value={Math.round(stats.winRate).toString()} icon={Percent} suffix="%" />
         <StatsCard title="ROI" value={stats.roi.toFixed(2)} icon={CircleDollarSign} suffix="%" />
       </div>
       
@@ -149,7 +150,7 @@ export function DashboardLayout({ initialTrades }: { initialTrades: Trade[] }) {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <StatsCard title="Best Strategy (Win Rate)" value={`${stats.bestStrategyByWinRate.name} (${stats.bestStrategyByWinRate.winRate.toFixed(1)}%)`} icon={Trophy} />
+        <StatsCard title="Best Strategy (Win Rate)" value={`${stats.bestStrategyByWinRate.name} (${Math.round(stats.bestStrategyByWinRate.winRate)}%)`} icon={Trophy} />
         <StatsCard title="Best Strategy (Avg. R/R)" value={`${stats.bestStrategyByAvgRR.name} (${stats.bestStrategyByAvgRR.avgRR.toFixed(2)}R)`} icon={Target} />
       </div>
 
@@ -160,6 +161,20 @@ export function DashboardLayout({ initialTrades }: { initialTrades: Trade[] }) {
           </CardHeader>
           <CardContent className="h-[350px] p-2">
             <PerformanceChart trades={filteredTrades} />
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-4 grid-cols-1">
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-headline">Trade Distribution by Pair</CardTitle>
+            <CardDescription>
+              Number of trades taken for each currency pair
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="h-[350px] p-2">
+            <PairDistributionChart trades={filteredTrades} />
           </CardContent>
         </Card>
       </div>

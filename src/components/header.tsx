@@ -1,4 +1,6 @@
-import { Flame } from 'lucide-react';
+import { Flame, Settings } from 'lucide-react';
+import Link from 'next/link';
+import { Button } from './ui/button';
 import { NewTradeDialog } from './new-trade-dialog';
 
 export function Header() {
@@ -9,7 +11,15 @@ export function Header() {
           <Flame className="h-6 w-6 text-primary" />
           <h1 className="text-xl font-bold font-headline text-primary">TradeFlow</h1>
         </div>
-        <NewTradeDialog />
+        <div className="flex items-center gap-2">
+          <Button asChild variant="ghost" size="icon">
+            <Link href="/settings/strategies">
+              <Settings className="h-4 w-4" />
+              <span className="sr-only">Settings</span>
+            </Link>
+          </Button>
+          <NewTradeDialog />
+        </div>
       </div>
     </header>
   );

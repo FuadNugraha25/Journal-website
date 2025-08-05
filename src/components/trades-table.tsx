@@ -17,6 +17,10 @@ import Image from 'next/image';
 
 export function TradesTable({ trades }: { trades: Trade[] }) {
   
+  // Filter trades to only show the 3 specific pairs
+  const allowedPairs = ['XAUUSD', 'GBPJPY', 'EURUSD'];
+  const filteredTrades = trades.filter(trade => allowedPairs.includes(trade.pair));
+  
   const getOutcomeStyles = (outcome: Trade['outcome']) => {
     switch (outcome) {
       case 'tp':
@@ -70,14 +74,14 @@ export function TradesTable({ trades }: { trades: Trade[] }) {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {trades.length === 0 && (
+                {filteredTrades.length === 0 && (
                     <TableRow>
                         <TableCell colSpan={9} className="h-24 text-center">
                             No trades found.
                         </TableCell>
                     </TableRow>
                 )}
-                {trades.map((trade) => (
+                {filteredTrades.map((trade) => (
                 <TableRow key={trade.id}>
                     <TableCell className="font-medium">{trade.pair}</TableCell>
                     <TableCell>
@@ -90,7 +94,7 @@ export function TradesTable({ trades }: { trades: Trade[] }) {
                     <TableCell>{trade.session}</TableCell>
                     <TableCell>
                         <Badge className={cn(getOutcomeBadge(trade.outcome), "uppercase")}>
-                            {trade.outcome}
+                            {trade.outcome === 'breakeven' ? 'BE' : trade.outcome}
                         </Badge>
                     </TableCell>
                     <TableCell>{format(trade.closeDate, 'PP')}</TableCell>
