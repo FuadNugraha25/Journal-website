@@ -15,4 +15,6 @@ export interface Trade {
   session: TradeSession;
   outcome: TradeOutcome;
   image?: string;
+  lotSize: number;
+  riskSize: number;
 }

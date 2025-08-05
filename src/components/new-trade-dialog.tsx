@@ -53,17 +53,19 @@ import {
 import Image from 'next/image';
 import { ScrollArea } from './ui/scroll-area';
 
-const tradeSchema = z.object({
-  pair: z.enum(['XAUUSD', 'GBPJPY', 'EURUSD'], { required_error: 'Please select a pair.' }),
-  type: z.enum(['buy', 'sell'], { required_error: 'Please select a trade type.' }),
-  profit: z.coerce.number(),
-  outcome: z.enum(['tp', 'sl', 'breakeven', 'cp', 'cl'], { required_error: 'Please select an outcome.' }),
-  riskRewardRatio: z.coerce.number(),
-  closeDate: z.date({ required_error: 'Please select a date.' }),
-  strategy: z.string({ required_error: 'Please select a strategy.' }),
-  session: z.enum(['Asian', 'London', 'New York'], { required_error: 'Please select a session.' }),
-  image: z.string().optional(),
-});
+  const tradeSchema = z.object({
+    pair: z.enum(['XAUUSD', 'GBPJPY', 'EURUSD'], { required_error: 'Please select a pair.' }),
+    type: z.enum(['buy', 'sell'], { required_error: 'Please select a trade type.' }),
+    profit: z.coerce.number(),
+    outcome: z.enum(['tp', 'sl', 'breakeven', 'cp', 'cl'], { required_error: 'Please select an outcome.' }),
+    riskRewardRatio: z.coerce.number(),
+    closeDate: z.date({ required_error: 'Please select a date.' }),
+    strategy: z.string({ required_error: 'Please select a strategy.' }),
+    session: z.enum(['Asian', 'London', 'New York'], { required_error: 'Please select a session.' }),
+    image: z.string().optional(),
+    lotSize: z.coerce.number().required({ required_error: 'Lot size is required.' }),
+    riskSize: z.coerce.number().required({ required_error: 'Risk size is required.' }),
+  });
 
 type TradeFormValues = z.infer<typeof tradeSchema>;
 
@@ -85,11 +87,13 @@ export function NewTradeDialog() {
 
   const form = useForm<TradeFormValues>({
     resolver: zodResolver(tradeSchema),
-    defaultValues: {
-      profit: 0,
-      riskRewardRatio: 1,
-      outcome: 'tp',
-    },
+  defaultValues: {
+    profit: 0,
+    riskRewardRatio: 1,
+    outcome: 'tp',
+    lotSize: 0.1,
+    riskSize: 50,
+  },
   });
 
   const { formState: RHFFormState, watch, setValue, reset } = form;

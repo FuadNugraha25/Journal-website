@@ -15,6 +15,8 @@ const tradeSchema = z.object({
   strategy: z.string(),
   session: z.enum(['Asian', 'London', 'New York']),
   image: z.string().optional(),
+  lotSize: z.coerce.number(),
+  riskSize: z.coerce.number(),
 });
 
 export type FormState = {
@@ -48,6 +50,8 @@ export async function addTradeAction(prevState: FormState, formData: FormData): 
     session: formData.get('session'),
     outcome: formData.get('outcome'),
     image: formData.get('image'),
+    lotSize: formData.get('lotSize'),
+    riskSize: formData.get('riskSize'),
   });
   
   if (!validatedFields.success) {
@@ -68,6 +72,8 @@ export async function addTradeAction(prevState: FormState, formData: FormData): 
       session: validatedFields.data.session as TradeSession,
       outcome: validatedFields.data.outcome as TradeOutcome,
       image: validatedFields.data.image,
+      lotSize: validatedFields.data.lotSize,
+      riskSize: validatedFields.data.riskSize,
     });
 
     revalidatePath('/');
