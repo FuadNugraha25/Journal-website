@@ -15,8 +15,8 @@ const tradeSchema = z.object({
   strategy: z.string(),
   session: z.enum(['Asian', 'London', 'New York']),
   image: z.string().optional(),
-  lotSize: z.coerce.number(),
-  riskSize: z.coerce.number(),
+  lotSize: z.coerce.number().min(0.01, { message: 'Lot size is required and must be greater than 0.' }),
+  riskSize: z.coerce.number().min(0.01, { message: 'Risk size is required and must be greater than 0.' }),
 });
 
 export type FormState = {
