@@ -63,8 +63,8 @@ import { ScrollArea } from './ui/scroll-area';
     strategy: z.string({ required_error: 'Please select a strategy.' }),
     session: z.enum(['Asian', 'London', 'New York'], { required_error: 'Please select a session.' }),
     image: z.string().optional(),
-    lotSize: z.coerce.number().required({ required_error: 'Lot size is required.' }),
-    riskSize: z.coerce.number().required({ required_error: 'Risk size is required.' }),
+    lotSize: z.coerce.number().min(0.01, { message: 'Lot size is required and must be greater than 0.' }),
+    riskSize: z.coerce.number().min(0.01, { message: 'Risk size is required and must be greater than 0.' }),
   });
 
 type TradeFormValues = z.infer<typeof tradeSchema>;
