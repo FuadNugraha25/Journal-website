@@ -9,7 +9,7 @@ export function Header() {
       <div className="container flex h-14 max-w-screen-2xl items-center justify-between">
         <div className="flex items-center gap-2">
           <Flame className="h-6 w-6 text-primary" />
-          <h1 className="text-xl font-bold font-headline text-primary">TradeFlow</h1>
+          <h1 className="text-xl font-bold font-headline text-primary">Fuad's Journal</h1>
         </div>
         <div className="flex items-center gap-2">
           <Button asChild variant="ghost" size="icon">

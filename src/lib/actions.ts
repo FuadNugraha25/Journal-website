@@ -106,10 +106,13 @@ export async function updateInitialCapitalAction(capital: number): Promise<{ mes
             return { message: "Invalid capital amount" };
         }
         await updateInitialCapital(validatedCapital.data);
-        revalidatePath('/');
-        revalidatePath('/settings/strategies');
-        return { message: 'Initial capital updated successfully.' };
+        // Revalidate both the dashboard and settings pages
+        revalidatePath('/', 'page');
+        revalidatePath('/settings/strategies', 'page');
+        return { message: 'Initial capital updated successfully. The dashboard will update shortly.' };
     } catch (e) {
-        return { message: 'Failed to update initial capital.' };
+        console.error('Error updating capital:', e);
+        const detail = e instanceof Error ? e.message : '';
+        return { message: `Failed to update initial capital${detail ? `: ${detail}` : '.'}` };
     }
 }

@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { DollarSign, Percent, Banknote, Trophy, Target, TrendingUp, TrendingDown, CircleDollarSign, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 import { getInitialCapital } from '@/lib/data';
 import { TradeCalendar } from './trade-calendar';
+import { MonthlyWinLossChart } from './monthly-win-loss-chart';
 
 type Filter = {
   pair: 'all' | TradePair;
@@ -19,9 +20,27 @@ export function DashboardLayout({ initialTrades }: { initialTrades: Trade[] }) {
   const [trades, setTrades] = useState<Trade[]>(initialTrades);
   const [filters, setFilters] = useState<Filter>({ pair: 'all' });
   const [initialCapital, setInitialCapital] = useState<number | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
+  // Refresh capital when the component mounts or when refreshKey changes
   useEffect(() => {
-    getInitialCapital().then(setInitialCapital);
+    const fetchCapital = async () => {
+      const capital = await getInitialCapital();
+      setInitialCapital(capital);
+    };
+    fetchCapital();
+  }, [refreshKey]);
+
+  // Listen for custom event to refresh capital
+  useEffect(() => {
+    const handleCapitalUpdated = () => {
+      setRefreshKey(prev => prev + 1);
+    };
+    
+    window.addEventListener('capitalUpdated', handleCapitalUpdated);
+    return () => {
+      window.removeEventListener('capitalUpdated', handleCapitalUpdated);
+    };
   }, []);
 
   const filteredTrades = useMemo(() => {
@@ -180,17 +199,29 @@ export function DashboardLayout({ initialTrades }: { initialTrades: Trade[] }) {
       </div>
       </div>
        <div className="lg:col-span-2">
-         <Card className="h-full">
-            <CardHeader>
-              <CardTitle className="font-headline">Trading Calendar</CardTitle>
-              <CardDescription>
-                An overview of your trading activity by day.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <TradeCalendar trades={initialTrades} />
-            </CardContent>
-          </Card>
+         <Card>
+           <CardHeader>
+             <CardTitle className="font-headline">Trading Calendar</CardTitle>
+             <CardDescription>
+               An overview of your trading activity by day.
+             </CardDescription>
+           </CardHeader>
+           <CardContent className="p-2">
+             <TradeCalendar trades={initialTrades} />
+           </CardContent>
+         </Card>
+          {/* Monthly Win/Loss Chart Section */}
+          <div className="mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-headline">Monthly Win/Loss</CardTitle>
+                <CardDescription>Wins go upward, losses go downward (Jan–Dec)</CardDescription>
+              </CardHeader>
+              <CardContent className="h-[260px] p-2">
+                <MonthlyWinLossChart trades={initialTrades} />
+              </CardContent>
+            </Card>
+          </div>
       </div>
     </div>
   );

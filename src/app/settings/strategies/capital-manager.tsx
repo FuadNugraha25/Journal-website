@@ -17,6 +17,9 @@ export function CapitalManager({ initialCapital }: { initialCapital: number }) {
     startTransition(async () => {
       const result = await updateInitialCapitalAction(capital);
       if (result.message.includes('success')) {
+        // Dispatch a custom event to notify other components about the capital update
+        window.dispatchEvent(new Event('capitalUpdated'));
+        
         toast({
           title: 'Success!',
           description: result.message,

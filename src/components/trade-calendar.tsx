@@ -113,7 +113,7 @@ export function TradeCalendar({ trades }: { trades: Trade[] }) {
   };
 
   return (
-    <div className="w-full max-w-2xl">
+    <div className="w-full">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">{format(currentMonth, 'MMMM yyyy')}</h3>
         <div className="flex items-center gap-2">
